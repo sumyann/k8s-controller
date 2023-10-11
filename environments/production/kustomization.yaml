@@ -1,0 +1,5 @@
+---
+namespace: production
+resources:
+- ../../config/base
+- namespace.yaml

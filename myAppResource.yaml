@@ -1,0 +1,25 @@
+apiVersion: my.api.group.my.api.group/v1alpha1
+kind: MyAppResource
+metadata:
+  name: example-app
+  namespace: production
+spec:
+  replicaCount: 2
+  resources:
+    memoryLimit: "64Mi"
+    cpuRequest: "100m"
+  image:
+    repository: "ghcr.io/stefanprodan/podinfo"
+    tag: "latest"
+  ui:
+    color: "#34577c"
+    message: "Hello, Podinfo!"
+  cacheServer:
+    enabled: true
+    host: "redis-service"
+    port: 6379
+  redis:
+    enabled: true
+  env:
+  - name: PODINFO_CACHE_SERVER
+    value: "tcp://redis-service:6379"
