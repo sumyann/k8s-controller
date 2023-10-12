@@ -72,7 +72,7 @@ This project demonstrates a custom Kubernetes controller for deploying the Podin
 2. Once the custom resource is deployed, the controller will create the necessary resources for the Podinfo application and Redis. Verify the deployment:
 
     ```bash
-    kubectl get all -n <namespace>
+    kubectl get all -n production
     ```
 
 ## Accessing the Podinfo UI
