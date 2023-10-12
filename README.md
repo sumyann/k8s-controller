@@ -21,8 +21,11 @@ This project demonstrates a custom Kubernetes controller for deploying the Podin
     ```bash
     go build -o bin/controller ./internal/controller
     ```
-
-3. Run the tests to ensure everything is working as expected:
+3. Install the CRDs into the cluster:
+    ```bash
+    make install
+    ```
+4. Run the tests to ensure everything is working as expected:
     ```bash
     go test ./... -v
     ```
@@ -81,5 +84,6 @@ This project demonstrates a custom Kubernetes controller for deploying the Podin
 
 You can interact with the Podinfo application's cache via HTTP requests to the `/cache/{key}` endpoint. For example, to save data to the cache:
 
-```bash
+    ```bash
 curl -X POST http://<podinfo-url>/cache/my-key -d '"hello world"'
+    ```
