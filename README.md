@@ -96,5 +96,5 @@ curl http://<podinfo-url>:30098/cache/my-new-key
 
 Alternative way to verify API execute script:
 ```
-app_verify.sh
+./app_verify.sh
 ```
