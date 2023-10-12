@@ -6,4 +6,4 @@ metadata:
 resources:
 - deployment.yaml
 - service.yaml
-- myAppResource.yaml
+- namespace.yaml

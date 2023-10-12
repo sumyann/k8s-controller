@@ -23,7 +23,6 @@ import (
 	"testing"
 
 	appv1alpha1 "github.com/sumyann/k8s-controller/api/v1alpha1"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -44,11 +43,17 @@ var (
 	testEnv   *envtest.Environment
 )
 
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 func TestMain(m *testing.M) {
 	clientgoscheme.AddToScheme(scheme)
 	appv1alpha1.AddToScheme(scheme)
 
-	testEnv = &envtest.Environment{}
+	testEnv = &envtest.Environment{
+		UseExistingCluster: boolPtr(true),
+	}
 
 	var err error
 	cfg, err := testEnv.Start()
