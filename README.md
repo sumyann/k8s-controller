@@ -85,4 +85,10 @@ This project demonstrates a custom Kubernetes controller for deploying the Podin
 You can interact with the Podinfo application's cache via HTTP requests to the `/cache/{key}` endpoint. For example, to save data to the cache:
 
 ```bash
-curl -X POST http://<podinfo-url>/cache/my-key -d '"hello world"'
+curl -X POST http://<podinfo-url>:30098/cache/my-key -d '"hello world"'
+curl -X PUT http://<podinfo-url>:30098/cache/my-new-key -d 'hello world'
+
+```
+To get the data from the cache:
+```bash
+curl http://<podinfo-url>:30098/cache/my-new-key
