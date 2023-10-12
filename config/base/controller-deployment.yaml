@@ -15,4 +15,4 @@ spec:
     spec:
       containers:
       - name: controller
-        image: ghcr.io/sumyann/k8s-controller:latest
+        image: ghcr.io/sumyann/k8s-controller:latest  # replace with your image controller

@@ -17,49 +17,64 @@ This project demonstrates a custom Kubernetes controller for deploying the Podin
     cd your-repo
     ```
 
-2. Run the tests to ensure everything is working as expected:
+2. Compile the controller binary:
+    ```bash
+    go build -o bin/controller ./internal/controller
+    ```
+
+3. Run the tests to ensure everything is working as expected:
     ```bash
     go test ./... -v
     ```
-<!-- 
-3. Compile the controller binary:
-    ```bash
-    go build -o bin/controller main.go
-    ``` -->
-
 ## Deploying the Controller
 
 1. Build the Docker image for the controller:
     ```bash
-    docker build -t your-username/controller:latest .
+    make docker-build docker-push IMG=<your-registry>/controller-image:tag
     ```
 
-2. Push the Docker image to a registry:
-    ```bash
-    docker push your-username/controller:latest
-    ```
-
-3. Apply the necessary RBAC, CRD, and Deployment manifests for the controller:
-    ```bash
-    kubectl apply -f manifests/
+2. **Update the Controller Deployment Manifest**:
+    - Open the controller deployment manifest file (`config/base/controller-deployment.yaml`).
+    - Locate the `image` field under the `containers` section and replace it with the image path from the registry.
+    ```yaml
+    
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: controller-deployment
+      namespace: production
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: controller
+      template:
+        metadata:
+          labels:
+            app: controller
+        spec:
+          containers:
+          - name: controller
+            image: <your-registry>/controller-image:tag  # Replace with your image path
+            ...
     ```
 
 ## Deploying the Example Custom Resource
 
 1. Apply the example custom resource manifest to deploy the Podinfo application and Redis:
     ```bash
-    kubectl apply -f examples/myAppResource.yaml
+    make deploy
     ```
 
 2. Once the custom resource is deployed, the controller will create the necessary resources for the Podinfo application and Redis. Verify the deployment:
 
     ```bash
-    kubectl get deployments,pods,services -n <namespace>
+    kubectl get all -n <namespace>
     ```
 
 ## Accessing the Podinfo UI
 
-- If you've exposed the Podinfo application using a NodePort or LoadBalancer service, you can access the Podinfo UI by navigating to the service's IP address and port.
+- The Podinfo application using a NodePort service, you can access the Podinfo UI by navigating to the service's IP address and port.
 - For example, if using a NodePort service on a local cluster, you might access the UI at `http://localhost:30098`.
 
 ## Interacting with the Cache

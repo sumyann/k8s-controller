@@ -18,9 +18,7 @@ func TestMyAppResourceReconciler_Reconcile(t *testing.T) {
 			Name:      "example-app",
 			Namespace: "default",
 		},
-		Spec: appv1alpha1.MyAppResourceSpec{
-			// ... your resource spec
-		},
+		Spec: appv1alpha1.MyAppResourceSpec{},
 	}
 
 	// Create the resource in the Kubernetes cluster
@@ -43,5 +41,4 @@ func TestMyAppResourceReconciler_Reconcile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// ... additional checks to verify the behavior of your reconciler
 }

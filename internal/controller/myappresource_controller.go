@@ -150,7 +150,7 @@ func (r *MyAppResourceReconciler) deploymentForPodinfo(m *appv1alpha1.MyAppResou
 						{
 							Name:  "podinfo",
 							Image: "ghcr.io/stefanprodan/podinfo:latest",
-							Env:   envVars, // Updated to use merged environment variables
+							Env:   envVars, // to use merged environment variables
 						},
 					},
 				},
