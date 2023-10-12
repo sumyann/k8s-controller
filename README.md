@@ -92,3 +92,9 @@ curl -X PUT http://<podinfo-url>:30098/cache/my-new-key -d 'hello world'
 To get the data from the cache:
 ```bash
 curl http://<podinfo-url>:30098/cache/my-new-key
+```
+
+Alternative way to verify API execute script:
+```
+app_verify.sh
+```
