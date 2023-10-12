@@ -16,7 +16,7 @@ func TestMyAppResourceReconciler_Reconcile(t *testing.T) {
 	exampleResource := &appv1alpha1.MyAppResource{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "example-app",
-			Namespace: "production",
+			Namespace: "default",
 		},
 		Spec: appv1alpha1.MyAppResourceSpec{
 			// ... your resource spec
@@ -38,7 +38,7 @@ func TestMyAppResourceReconciler_Reconcile(t *testing.T) {
 	_, err = r.Reconcile(context.TODO(), ctrl.Request{
 		NamespacedName: types.NamespacedName{
 			Name:      "example-app",
-			Namespace: "production",
+			Namespace: "default",
 		},
 	})
 	require.NoError(t, err)
