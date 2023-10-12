@@ -7,3 +7,7 @@ resources:
 - deployment.yaml
 - service.yaml
 - namespace.yaml
+- controller-deployment.yaml
+- clusterrole.yaml
+- clusterrolebinding.yaml
+- myAppResource.yaml

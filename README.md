@@ -21,11 +21,11 @@ This project demonstrates a custom Kubernetes controller for deploying the Podin
     ```bash
     go test ./... -v
     ```
-
+<!-- 
 3. Compile the controller binary:
     ```bash
     go build -o bin/controller main.go
-    ```
+    ``` -->
 
 ## Deploying the Controller
 
