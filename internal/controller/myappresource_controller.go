@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -46,6 +45,7 @@ type MyAppResourceReconciler struct {
 
 func (r *MyAppResourceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("myappresource", req.NamespacedName)
+	log.Info("Starting reconciliation", "namespace", req.NamespacedName.Namespace, "name", req.NamespacedName.Name)
 
 	// Fetch the MyAppResource instance
 	myAppResource := &appv1alpha1.MyAppResource{}
@@ -69,6 +69,7 @@ func (r *MyAppResourceReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// Check if this Podinfo Deployment already exists
 	found := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: podinfoDeployment.Name, Namespace: podinfoDeployment.Namespace}, found)
+
 	if err != nil && errors.IsNotFound(err) {
 		log.Info("Creating a new Deployment", "Deployment.Namespace", podinfoDeployment.Namespace, "Deployment.Name", podinfoDeployment.Name)
 		err = r.Create(ctx, podinfoDeployment)
@@ -81,19 +82,34 @@ func (r *MyAppResourceReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	} else if err != nil {
 		log.Error(err, "Failed to get Deployment")
 		return ctrl.Result{}, err
-	}
+	} else {
+		// Update the deployment if necessary
+		updateNeeded := false
 
-	// Ensure the deployment size is the same as the spec
-	replicaCount := myAppResource.Spec.ReplicaCount
-	if *found.Spec.Replicas != replicaCount {
-		found.Spec.Replicas = &replicaCount
-		log.Info("Updating Deployment Replicas", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
-		err = r.Update(ctx, found)
-		if err != nil {
-			log.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
-			return ctrl.Result{}, err
+		// Check and update the replica count
+		replicaCount := myAppResource.Spec.ReplicaCount
+		if *found.Spec.Replicas != replicaCount {
+			found.Spec.Replicas = &replicaCount
+			updateNeeded = true
 		}
-		return ctrl.Result{Requeue: true}, nil
+
+		// Check and update the environment variables
+		mergedEnvVars := r.mergeEnvVars(myAppResource, found)
+		if !equalEnvVars(found.Spec.Template.Spec.Containers[0].Env, mergedEnvVars) {
+			found.Spec.Template.Spec.Containers[0].Env = mergedEnvVars
+			updateNeeded = true
+		}
+
+		// If an update is needed, update the deployment
+		if updateNeeded {
+			log.Info("Updating Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+			err = r.Update(ctx, found)
+			if err != nil {
+				log.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+				return ctrl.Result{}, err
+			}
+			return ctrl.Result{Requeue: true}, nil
+		}
 	}
 
 	// Update the MyAppResource status with the pod names
@@ -107,12 +123,66 @@ func (r *MyAppResourceReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, err
 	}
 
+	log.Info("Ending reconciliation", "namespace", req.NamespacedName.Namespace, "name", req.NamespacedName.Name)
+
 	return ctrl.Result{}, nil
+}
+
+// mergeEnvVars merges the environment variables from the CR and the existing deployment,
+// updating or appending the environment variables from the CR.
+func (r *MyAppResourceReconciler) mergeEnvVars(m *appv1alpha1.MyAppResource, d *appsv1.Deployment) []corev1.EnvVar {
+	// Create a map to hold the final set of environment variables
+	envVarMap := make(map[string]corev1.EnvVar)
+
+	// Populate the map with environment variables from the existing deployment
+	for _, envVar := range d.Spec.Template.Spec.Containers[0].Env {
+		envVarMap[envVar.Name] = envVar
+	}
+
+	// Update the map with environment variables from the CR, which will
+	// overwrite any existing environment variables with the same name
+	for _, envVar := range m.Spec.Env {
+		envVarMap[envVar.Name] = envVar
+	}
+
+	// Convert the map back to a slice
+	mergedEnvVars := make([]corev1.EnvVar, 0, len(envVarMap))
+	for _, envVar := range envVarMap {
+		mergedEnvVars = append(mergedEnvVars, envVar)
+	}
+
+	return mergedEnvVars
+}
+
+// equalEnvVars checks if two slices of environment variables are equal.
+func equalEnvVars(envVars1, envVars2 []corev1.EnvVar) bool {
+	if len(envVars1) != len(envVars2) {
+		return false
+	}
+
+	// Convert slices to maps for easier comparison
+	envVarMap1 := make(map[string]string, len(envVars1))
+	envVarMap2 := make(map[string]string, len(envVars2))
+
+	for _, envVar := range envVars1 {
+		envVarMap1[envVar.Name] = envVar.Value
+	}
+	for _, envVar := range envVars2 {
+		envVarMap2[envVar.Name] = envVar.Value
+	}
+
+	// Compare maps
+	for key, value := range envVarMap1 {
+		if envVarMap2[key] != value {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (r *MyAppResourceReconciler) deploymentForPodinfo(m *appv1alpha1.MyAppResource) *appsv1.Deployment {
 	labels := labelsForPodinfo(m.Name)
-	cacheServerAddress := fmt.Sprintf("tcp://%s:%d", m.Spec.CacheServer.Host, m.Spec.CacheServer.Port)
 
 	// Merge environment variables from the env field with other environment variables
 	envVars := append(m.Spec.Env, []corev1.EnvVar{
@@ -123,10 +193,6 @@ func (r *MyAppResourceReconciler) deploymentForPodinfo(m *appv1alpha1.MyAppResou
 		{
 			Name:  "PODINFO_UI_MESSAGE",
 			Value: m.Spec.UI.Message,
-		},
-		{
-			Name:  "PODINFO_CACHE_SERVER",
-			Value: cacheServerAddress,
 		},
 	}...)
 

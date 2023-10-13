@@ -21,7 +21,7 @@ This project demonstrates a custom Kubernetes controller for deploying the Podin
     ```bash
     go build -o bin/controller ./internal/controller
     ```
-3. Install the CRDs into the cluster:
+3. (Optional): Install the CRDs into the cluster: (encountered some issues with tests due to control plane running on kubernetes with Docker Desktop)
     ```bash
     make install
     ```
@@ -98,3 +98,9 @@ Alternative way to verify API execute script:
 ```
 ./app_verify.sh
 ```
+
+## Clean Up
+    ```bash
+    make undeploy
+    ```
+
