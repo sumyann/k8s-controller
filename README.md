@@ -78,7 +78,10 @@ This project demonstrates a custom Kubernetes controller for deploying the Podin
 ## Accessing the Podinfo UI
 
 - The Podinfo application using a NodePort service, you can access the Podinfo UI by navigating to the service's IP address and port.
-- For example, if using a NodePort service on a local cluster, you might access the UI at `http://localhost:30098`.
+- For example, if using a NodePort service on a local cluster, you might access the UI at 
+```
+http://localhost:30098
+```
 
 ## Interacting with the Cache
 
