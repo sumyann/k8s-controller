@@ -107,3 +107,9 @@ Alternative way to verify API execute script:
     make undeploy
     ```
 
+##  Apply manually custom resource manifest:
+```
+kubectl apply -k environments/production/
+```
+
+Note: in order to see the changes the app has to be redeployed.
