@@ -103,9 +103,9 @@ Alternative way to verify API execute script:
 ```
 
 ## Clean Up
-    ```bash
-    make undeploy
-    ```
+```
+make undeploy
+```
 
 ##  Apply manually custom resource manifest:
 ```
